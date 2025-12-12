@@ -1,12 +1,17 @@
-let particleSystem;
+let cell;
+let flowfield;
 
 function setup() {
-  createCanvas(600, 400);
-  particleSystem = new ParticleSystem();
+    createCanvas(600, 400);
+    cell = new ParticleSystem();
+    flowfield = new FlowField(20);
 }
 
-function draw() {
-  background(0);
-  particleSystem.addParticle();
-  particleSystem.run();
+function draw() { 
+    background(0);
+
+    flowfield.update();          
+    
+    cell.addParticle();
+    cell.run(flowfield); 
 }
