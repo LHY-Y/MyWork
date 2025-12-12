@@ -1,8 +1,12 @@
+let particleSystem;
 
 function setup() {
   createCanvas(600, 400);
-  noStroke();
-  background(0);
+  particleSystem = new ParticleSystem();
 }
 
-function draw() {}
+function draw() {
+  background(0);
+  particleSystem.addParticle();
+  particleSystem.run();
+}
