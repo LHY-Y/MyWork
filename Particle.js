@@ -9,7 +9,7 @@ class Particle {
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
 
-    // Visual properties will be set based on current ageFactor in update/display
+    // 파티클 비주얼
     this.size = random(3, 6);
     this.alpha = 255;
     this.isDisruptor = false;
@@ -17,10 +17,24 @@ class Particle {
   }
 
   run(ageFactor) {
+    this.getFlowVector(ageFactor);
     this.update(ageFactor);
     this.checkEdges();
     this.display(ageFactor);
   }
+
+  getFlowVector(ageFactor) { //flowfield 계산
+    let nScale = map(ageFactor, 0, 1, 0.005, 0.02);
+    let time = frameCount * 0.005;
+    let n = noise(this.pos.x * nScale, this.pos.y * nScale, time); //노이즈 값
+    this.angle = n * TWO_PI * 2; //시간 흐를수록 꼬이게
+
+    let v = createVector(cos(this.angle), sin(this.angle));
+    let strength = map(ageFactor, 0, 1, 0.5, 0.1);
+    v.setMag(strength);
+    return v;
+  }
+
 
   update(ageFactor) {
     // Determine if disruptor based on age (chance increases with age)
@@ -30,20 +44,9 @@ class Particle {
       this.isDisruptor = true;
     }
 
-    // Flow Field Calculations
-    // Noise scale: Increases with age (Smooth -> Chaotic)
-    let nScale = map(ageFactor, 0, 1, 0.005, 0.02);
-    let time = frameCount * 0.005;
-
-    // Get noise value
-    let n = noise(this.pos.x * nScale, this.pos.y * nScale, time);
-
-    // Angle: Healthy flows are aligned, aged flows are twisted
-    let angle = n * TWO_PI * 2;
-
     // Create flow vector directly
-    let flowX = cos(angle);
-    let flowY = sin(angle);
+    let flowX = cos(this.angle);
+    let flowY = sin(this.angle);
 
     // Flow Strength: Strong cohesion in young cells, weak in old
     let flowStrength = map(ageFactor, 0, 1, 0.5, 0.1);

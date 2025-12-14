@@ -1,7 +1,7 @@
 let simulation;
 let startTime;
 const MAX_PARTICLES = 1200; // Optimized count
-const CYCLE_DURATION = 60; // 60 seconds per cycle
+const CYCLE_DURATION = 60; // 한 사이클 당 시간(초)
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
