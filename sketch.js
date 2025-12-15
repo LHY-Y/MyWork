@@ -10,7 +10,7 @@ function setup() {
     background(5, 12, 25);
 
     simulation = new AgingSimulation(MAX_PARTICLES, width, height);
-    flowfield = new FlowField();
+    flowfield = new FlowField(20, width, height);
     startTime = millis();
 }
 
@@ -23,17 +23,16 @@ function draw() {
 
     // Calculate Age Factor (0.0 to 1.0) based on time
     let elapsed = (millis() - startTime) / 1000;
-    let t = (elapsed % CYCLE_DURATION) / CYCLE_DURATION;
+    let t = min(elapsed / CYCLE_DURATION, 1);
 
     // Additive blending for glow
     blendMode(ADD);
 
     simulation.run(t, flowfield);
 
-    // Optional: Debug info
-    // blendMode(BLEND);
-    // fill(255);
-    // text("Age: " + nf(t, 1, 2), 10, 20);
+    if (mouseIsPressed) {
+        simulation.interact(mouseX, mouseY, flowfield);
+    }
 }
 
 function windowResized() {
