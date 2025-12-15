@@ -37,9 +37,6 @@ class Particle {
 
 
   update(ageFactor) {
-    // Determine if disruptor based on age (chance increases with age)
-    // Only set this once or allow it to change? 
-    // User code: "if idx === 5 ...". Here we use continuous ageFactor.
     if (!this.isDisruptor && ageFactor > 0.8 && random(1) < 0.005) {
       this.isDisruptor = true;
     }
@@ -51,22 +48,11 @@ class Particle {
     // Flow Strength: Strong cohesion in young cells, weak in old
     let flowStrength = map(ageFactor, 0, 1, 0.5, 0.1);
 
-    // Apply specific behaviors
-    if (this.isDisruptor) {
-      // Disruptors move somewhat against or perpendicular to flow, or erratically
-      let dx = random(-1, 1) * 0.8;
-      let dy = random(-1, 1) * 0.8;
-      this.acc.x += dx;
-      this.acc.y += dy;
+     if (this.isDisruptor) {
+      this.applyDisruptorBehavior();
     } else {
-      // Normal particles
-      // Add randomness/scatter based on age
-      if (ageFactor > 0) {
-        let scatterX = random(-1, 1) * (ageFactor * 0.3);
-        let scatterY = random(-1, 1) * (ageFactor * 0.3);
-        flowX += scatterX;
-        flowY += scatterY;
-      }
+      this.applyNormalFlow(ageFactor);
+    }
 
       // Apply flow strength
       // Normalize roughly
@@ -78,7 +64,6 @@ class Particle {
 
       this.acc.x += flowX;
       this.acc.y += flowY;
-    }
 
     // Base speed
     let maxSpeed = map(ageFactor, 0, 1, 2.5, 1.0);
@@ -89,6 +74,15 @@ class Particle {
     this.vel.limit(maxSpeed);
     this.pos.add(this.vel);
     this.acc.mult(0);
+  }
+
+  applyNormalFlow(ageFactor) { //기본 플로우필드
+    let flow = this.getFlowVector(ageFactor);
+    this.acc.add(flow);
+  }
+
+  applyDisruptorBehavior() { //시간이 지날수록 플로우필드
+    this.acc.add(random(-0.8, 0.8), random(-0.8, 0.8));
   }
 
   checkEdges() {
