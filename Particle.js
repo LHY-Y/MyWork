@@ -16,72 +16,45 @@ class Particle {
     this.dead = false;
   }
 
-  run(ageFactor) {
-    this.getFlowVector(ageFactor);
-    this.update(ageFactor);
+  run(ageFactor, flowfield) {
+    this.update(ageFactor, flowfield);
     this.checkEdges();
     this.display(ageFactor);
   }
 
-  getFlowVector(ageFactor) { //flowfield 계산
-    let nScale = map(ageFactor, 0, 1, 0.005, 0.02);
-    let time = frameCount * 0.005;
-    let n = noise(this.pos.x * nScale, this.pos.y * nScale, time); //노이즈 값
-    this.angle = n * TWO_PI * 2; //시간 흐를수록 꼬이게
-
-    let v = createVector(cos(this.angle), sin(this.angle));
-    let strength = map(ageFactor, 0, 1, 0.5, 0.1);
-    v.setMag(strength);
-    return v;
-  }
-
-
-  update(ageFactor) {
-    if (!this.isDisruptor && ageFactor > 0.8 && random(1) < 0.005) {
-      this.isDisruptor = true;
-    }
-
-    // Create flow vector directly
-    let flowX = cos(this.angle);
-    let flowY = sin(this.angle);
-
-    // Flow Strength: Strong cohesion in young cells, weak in old
-    let flowStrength = map(ageFactor, 0, 1, 0.5, 0.1);
-
-     if (this.isDisruptor) {
-      this.applyDisruptorBehavior();
-    } else {
-      this.applyNormalFlow(ageFactor);
-    }
-
-      // Apply flow strength
-      // Normalize roughly
-      let mag = sqrt(flowX * flowX + flowY * flowY);
-      if (mag > 0) {
-        flowX = (flowX / mag) * flowStrength;
-        flowY = (flowY / mag) * flowStrength;
-      }
-
-      this.acc.x += flowX;
-      this.acc.y += flowY;
-
-    // Base speed
-    let maxSpeed = map(ageFactor, 0, 1, 2.5, 1.0);
-    if (this.isDisruptor) maxSpeed = 1.5;
-
-    // Physics update
-    this.vel.add(this.acc);
-    this.vel.limit(maxSpeed);
-    this.pos.add(this.vel);
-    this.acc.mult(0);
-  }
-
-  applyNormalFlow(ageFactor) { //기본 플로우필드
-    let flow = this.getFlowVector(ageFactor);
+  update(ageFactor, flowfield) {
+  if (this.isDisruptor) {
+    this.applyDisruptorBehavior();
+  } else {
+    let flow = flowfield.lookup(this.pos, ageFactor);
     this.acc.add(flow);
   }
 
-  applyDisruptorBehavior() { //시간이 지날수록 플로우필드
+  // 움직임
+  this.vel.add(this.acc);
+  this.vel.limit(this.getMaxSpeed(ageFactor));
+  this.pos.add(this.vel);
+  this.acc.mult(0);
+}
+
+  getMaxSpeed(ageFactor) {
+    // 나이가 어릴수록 빠르고, 늙을수록 느려짐
+    let maxSpeed = map(ageFactor, 0, 1, 2.5, 1.0);
+
+    // disruptor는 약간 다른 성질
+    if (this.isDisruptor) {
+     maxSpeed = 1.5;
+    }
+
+  return maxSpeed;
+}
+
+  applyNormalFlow(flowfield, ageFactor) {
+    let flow = flowfield.lookup(this.pos, ageFactor);
+    this.acc.add(flow);
+  }
+
+  applyDisruptorBehavior(flowfield, ageFactor) { //시간이 지날수록 플로우필드
     this.acc.add(random(-0.8, 0.8), random(-0.8, 0.8));
   }
 

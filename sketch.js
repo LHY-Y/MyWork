@@ -1,5 +1,6 @@
 let simulation;
 let startTime;
+let flowfield;
 const MAX_PARTICLES = 1200; // Optimized count
 const CYCLE_DURATION = 60; // 한 사이클 당 시간(초)
 
@@ -9,6 +10,7 @@ function setup() {
     background(5, 12, 25);
 
     simulation = new AgingSimulation(MAX_PARTICLES, width, height);
+    flowfield = new FlowField();
     startTime = millis();
 }
 
@@ -26,7 +28,7 @@ function draw() {
     // Additive blending for glow
     blendMode(ADD);
 
-    simulation.run(t);
+    simulation.run(t, flowfield);
 
     // Optional: Debug info
     // blendMode(BLEND);
